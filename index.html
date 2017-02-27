@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Meta tags -->
+        <meta content='text/html;charset=UTF-8' http-equiv='Content-Type'/>
+        <meta content='v0ff, design' name='keywords'/>
+        <meta content='Image arrarange' name='description'/>
+        <meta http-equiv="imagetoolbar" content="no" />
+        <meta content='7 days' name='revisit-after'/>
+        <meta content='v0ff' name='author'/>
+        <meta content='Vladimir' name='copyright'/>
+        <meta content='handy hands' name='generator'/>
+        <!-- Title -->
+        <title>zen Images</title>
+        
+        <!-- Javascript -->
+        <script src='//cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js' type='text/javascript'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.0/jquery.min.js' type='text/javascript'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js' type='text/javascript'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js' type='text/javascript'></script>
+        <script type="text/javascript" src="js/freewall.js"></script>
+        
+        <!--or script src='js/jquery.montage.min.js' type='text/javascript'></script //-->
+        <script src='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js' type='text/javascript'></script>
+        <!-- custom scripts //-->
+        <script type='text/javascript'>
+        
+
+        /**
+        * Print from any timestamps(js/php) to human time.
+        *
+        */
+        function humantime(inputtext) {
+
+            if (inputtext >= 100000000000000) {
+                //Assuming that this timestamp is in microseconds (1/1,000,000 second)
+                inputtext = Math.round(inputtext / 1000);
+            } else {
+                inputtext = (inputtext * 1000);
+            }
+
+            var datum = new Date(inputtext);
+            return datum.toUTCString();//or datum.toJSON();
+        }        
+        
+        
+        /**
+        * Pretty print file size
+        *
+        */
+        function inBytes(bytes,decimals) {
+           if(bytes == 0) return '0 Bytes';
+           var k = 1000,
+               dm = decimals + 1 || 2,
+               sizes = ['Bytes', 'KB', 'MB'],
+               i = Math.floor(Math.log(bytes) / Math.log(k));
+           return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + '' + sizes[i];
+        }
+        
+        /**
+        *Load JSON data from file intothepage
+        *
+        */
+        function loadData(){            
+            $.getJSON("js/data.json", function(data) {
+
+                //if notempty and at least 1 element is definded
+                if(!jQuery.isEmptyObject(data) && data[0].filename != null){
+                    
+                    //alert('all good calculate !!!');
+                    var items = [];
+                    $.each(data, function(key, val) {
+                        items.push("<img id='image" + key + "' class='lazy' src='downloaded_images/thumbnails/" + val['urlhash'] + "_" + val['filename'] + "' alt='" + val['filename'] + " " + inBytes(val['filesizethumb']) + " " + humantime(val['updated']) + "' width='" + val['widththumb'] + "' height='" + val['heightthumb'] + "'/ style='width: " + val['widththumb'] + "px; height: " + val['heightthumb'] + "px; background-image: url(loader.gif);'>");
+                    });
+                    $('#result').html(items.join(""));
+                    resizeme();  
+                }
+            });
+            
+            //and run lazyload for images.
+        }
+        
+        function resizeme(){
+			var wall = new Freewall("#result");
+			wall.reset({
+				selector: '.lazy',
+				animate: false,
+				cellW: 150,
+				cellH: 200,
+				onResize: function() {
+					wall.fitWidth();
+				}
+			});
+			wall.fitWidth();
+			// for scroll bar appear;
+			$(window).trigger("resize");
+        }
+        
+        $(document).ready(function (){
+
+            loadData();
+            resizeme();
+
+            // using ajaxForm with fallbacks to normal if user have not JS support
+            $('#jsonForm').ajaxForm({ 
+                
+                //dataType:  'json', //ret mime/type can be json xml html
+                beforeSubmit: function() {
+                    $('#result').html('Submitting, please wait...<br/><div class="progress progress-striped active"><div class="progress-bar progress-bar-info" style="width: 100%"></div></div><p><br/><br/></p>');
+                },
+                
+                // target identifies the element(s) to update with the server response 
+                // target: '#result', 
+                //or callback after run
+                success: function(data) {
+                    
+                    var $out = $('#result');
+                    ///////////////TODO print new result
+                    $out.html('Form success handler received: <strong>' + typeof data + '</strong><br/>'+ data +'');
+                    //parse json <img > filename / size(kb/mb) / w/h/upd
+                    // <img class="lazy" data-original="downloaded_images/example.jpg" width="" height="200"/>
+                    //$out.append('<div><pre>'+ data +'</pre></div>');
+                }
+            }); 
+            
+            
+        });
+        
+        </script>
+        
+        <!-- Stylesheets -->
+        <!-- sanitize.css v3.3.0 //-->
+        <link href='//cdnjs.cloudflare.com/ajax/libs/marx/2.0.7/marx.min.css' rel='stylesheet' type='text/css'/>
+        <!-- Bootstrap //-->
+        <link href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css' rel='stylesheet' type='text/css'/>
+        <link href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap-theme.min.css' rel='stylesheet' type='text/css'/>
+        
+        <!-- fonts //-->
+        <!--link href='http://fonts.googleapis.com/css?family=FONTNAME' rel='stylesheet' type='text/css'-->
+        
+        <!-- custom stylesheets //-->
+        <style type='text/css'><!--
+        /*#result > div{display: inline-block;}*/
+        #result{
+        	overflow:hidden;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 200px;
+        }
+        
+        #result img.lazy{
+            margin: 5px;
+        }
+
+
+        --></style>
+    </head>
+    <body class='someclass y2017 m2 d22 h19 home'>
+    
+    
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Tile IMAGES</a>
+            </div>
+        
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
+                <li><a href="#uploadform">upload form</a></li>
+                <li><a href="#result" onclick="loadData()">to results</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">made by V0FF</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+    
+          <div class="container page-header main content">
+
+            <div class="row">
+              <div class="col-lg-8 col-md-7 col-sm-6">
+                <h1>Upload image</h1>
+                <p class="lead">Upload txt file, then i do my job</p>
+              </div>
+            </div>
+
+            <a name="uploadform"></a>
+            <div id="uploadform">
+
+                <form class="form-horizontal" id="jsonForm" action="libraries/txtUpload.php" method="post" enctype="text/plain">
+                  <fieldset>
+                    <legend>Form upload and don't forget, txt files only !</legend>
+                    <div class="form-group">
+                      <label for="fileArea" class="col-lg-2 control-label">Upload *.txt</label>
+                      <div class="col-lg-10">
+                        <input class="btn btn-info" type="file" name="textfile" id="fileArea"/>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-lg-10 col-lg-offset-2">
+                        <button type="reset" class="btn btn-default"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></button>
+                        <button type="submit" class="btn btn-primary"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </form>
+                
+            </div>
+
+            
+            <a name="result"></a>
+            <legend>Output:</legend>
+            <div id="result">loading....
+            <img src="loader2.gif" style="width: 33.33%; height: auto;"/><img src="loader2.gif" style="width: 33.33%; height: auto;"/><img src="loader2.gif" style="width: 33.33%; height: auto;"/>
+                <!-- result must be like : 
+                <img class="lazy" data-original="downloaded_images/example.jpg" width="" height="200"/>
+                //-->
+            </div>
+
+
+            
+            
+        
+        </div>
+    </body>
+</html>
